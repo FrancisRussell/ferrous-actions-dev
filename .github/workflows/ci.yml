@@ -47,7 +47,7 @@ jobs:
         uses: ./
         with:
           command: cargo install
-          args: grcov
+          args: sccache
       - id: cargo-build
         uses: ./
         with:
