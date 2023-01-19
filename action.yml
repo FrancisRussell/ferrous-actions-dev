@@ -53,7 +53,7 @@ runs:
   using: 'node16'
   main: 'dist/main.js'
   post: 'dist/post.js'
-  post-if: 'success()'
+  post-if: contains(inputs.command, 'cache')
 branding:
   icon: 'git-pull-request'
   color: 'green'
