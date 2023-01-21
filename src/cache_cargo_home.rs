@@ -76,10 +76,7 @@ impl Group {
     }
 
     pub fn last_modified(&self) -> Option<DateTime<Utc>> {
-        self.entries
-            .values()
-            .filter_map(Fingerprint::modified)
-            .max()
+        self.entries.values().filter_map(Fingerprint::modified).max()
     }
 }
 
