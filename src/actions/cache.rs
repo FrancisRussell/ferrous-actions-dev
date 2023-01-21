@@ -45,7 +45,7 @@ const WORKSPACE_OVERRIDDEN_TAG: &str = "#WORKSPACE_OVERRIDEN";
 // location. This is a hack, but in general it means that we can reliably cache
 // and restore paths to locations that may change across time.
 
-/// Changes the current working directory and GITHUB_WORKSPACE to a specified
+/// Changes the current working directory and `$GITHUB_WORKSPACE` to a specified
 /// path and changes it back when it is dropped. This enables us to:
 /// - supply consistent relative paths (patterns rather) to the actions API
 /// - avoid issues related to archive paths being encoded relative to
