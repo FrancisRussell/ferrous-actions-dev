@@ -189,18 +189,21 @@ impl Entry {
         // We do not escape ']' as it would close the character set
         let mut result = String::with_capacity(path.len());
         let is_windows = node::os::platform() == "windows";
-        for c in path.chars() {
+        for (idx, c) in path.chars().enumerate() {
             match c {
-                '*' | '?' | '#' | '~' | '!' | '[' => result.extend(['[', c, ']']),
-                '\\' => {
+                '*' | '?' | '#' | '~' | '[' => result.extend(['[', c, ']']),
+                '!' if idx == 0 => {
+                    // A leading ! inverts a pattern, but it cannot be escaped
+                    // with a character class because it means a compliment there.
+                    // We could backslash escape, but only on non-Windows platforms.
+                    // For now we assume that files starting with ! are rare.
+                    result.push('?');
+                }
+                '\\' if !is_windows => {
                     // The glob syntax is platform specific, because of course it is. Blackslash is
                     // escape on Unix-like platforms, even in a character set. See
                     // `internal-pattern.ts`.
-                    if is_windows {
-                        result.push(c);
-                    } else {
-                        result.extend(['\\', c]);
-                    }
+                    result.extend(['\\', c]);
                 }
                 _ => result.push(c),
             }
