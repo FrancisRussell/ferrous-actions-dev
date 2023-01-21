@@ -1,7 +1,6 @@
 use crate::node;
 use crate::node::path::Path;
 use js_sys::JsString;
-use std::collections::HashMap;
 use std::convert::Into;
 use wasm_bindgen::prelude::*;
 
@@ -238,6 +237,7 @@ impl Entry {
 
     async fn peek_restore(&self) -> Result<Option<String>, JsValue> {
         use js_sys::Object;
+        use wasm_bindgen::JsCast as _;
 
         let compression_method: JsString = ffi::get_compression_method().await?.into();
         let keys: Vec<JsString> = std::iter::once(&self.key)
@@ -259,18 +259,12 @@ impl Entry {
             Ok(None)
         } else {
             let result: Object = result.into();
-            let entries = Object::entries(&result);
-            let mut entries: HashMap<String, JsValue> = entries
-                .iter()
-                .map(Into::<js_sys::Array>::into)
-                .map(|e| (e.get(0), e.get(1)))
-                .map(|(k, v)| (Into::<JsString>::into(k), v))
-                .map(|(k, v)| (Into::<String>::into(k), v))
-                .collect();
-            Ok(entries
-                .remove("cacheKey")
-                .map(Into::<JsString>::into)
-                .map(Into::<String>::into))
+            let cache_key = js_sys::Reflect::get(&result, &"cacheKey".into())?;
+            Ok(if cache_key == JsValue::NULL || cache_key == JsValue::UNDEFINED {
+                None
+            } else {
+                cache_key.dyn_ref::<JsString>().map(Into::into)
+            })
         }
     }
 }
