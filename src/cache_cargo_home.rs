@@ -656,12 +656,6 @@ fn get_min_recache_interval(
     Ok(result)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct CachedFolderInfo {
-    path: String,
-    fingerprint: Fingerprint,
-}
-
 fn dependency_file_path(cache_type: CacheType, scope: &HashValue, job: &Job) -> Result<Path, Error> {
     let dependency_dir = dependency_files_dir()?;
     let mut hasher = Blake3Hasher::default();
@@ -674,7 +668,7 @@ fn dependency_file_path(cache_type: CacheType, scope: &HashValue, job: &Job) -> 
 
 fn build_cache_entry_dependencies(cache_type: CacheType, scope: &HashValue, job: &Job) -> Result<CacheEntry, Error> {
     use crate::cache_key_builder::{Attribute, CacheKeyBuilder};
-    let name = format!("{} (dependencies)", cache_type.friendly_name());
+    let name = format!("{} (dependency list)", cache_type.friendly_name());
     let mut key_builder = CacheKeyBuilder::new(&name);
     key_builder.add_key_data(scope);
     key_builder.set_key_attribute(Attribute::Workflow, job.get_workflow().to_string());

@@ -3,7 +3,7 @@ use node::path::Path;
 use std::borrow::Cow;
 
 pub fn get_action_name() -> Cow<'static, str> {
-    "github-rust-actions".into()
+    "ferrous-actions".into()
 }
 
 #[allow(clippy::unnecessary_wraps)]

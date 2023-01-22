@@ -1,6 +1,7 @@
 use js_sys::JsString;
 use lazy_static::lazy_static;
 use std::borrow::Cow;
+use wasm_bindgen::JsCast as _;
 
 #[derive(Clone)]
 pub struct Path {
@@ -9,10 +10,8 @@ pub struct Path {
 
 lazy_static! {
     static ref SEPARATOR: String = {
-        use wasm_bindgen::JsCast as _;
         ffi::SEPARATOR
-            .clone()
-            .dyn_into::<JsString>()
+            .dyn_ref::<JsString>()
             .expect("separator wasn't a string")
             .into()
     };
@@ -20,10 +19,8 @@ lazy_static! {
 
 lazy_static! {
     static ref DELIMITER: String = {
-        use wasm_bindgen::JsCast as _;
         ffi::DELIMITER
-            .clone()
-            .dyn_into::<JsString>()
+            .dyn_ref::<JsString>()
             .expect("delimiter wasn't a string")
             .into()
     };
@@ -62,7 +59,7 @@ impl Path {
     }
 
     pub fn to_js_string(&self) -> JsString {
-        self.inner.to_string()
+        self.inner.clone()
     }
 
     #[must_use]

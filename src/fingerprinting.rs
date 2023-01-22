@@ -223,14 +223,8 @@ impl dir_tree::Visitor for BuildFingerprintVisitor {
         if is_file {
             let stats = fs::symlink_metadata(path).await?;
             let metadata = Metadata::from(&stats);
-            self.modified = Some(match self.modified {
-                None => metadata.modified,
-                Some(latest) => std::cmp::max(latest, metadata.modified),
-            });
-            self.accessed = Some(match self.accessed {
-                None => metadata.accessed,
-                Some(latest) => std::cmp::max(latest, metadata.accessed),
-            });
+            self.modified = self.modified.into_iter().chain(std::iter::once(metadata.modified)).max();
+            self.accessed = self.accessed.into_iter().chain(std::iter::once(metadata.accessed)).max();
             let file_name = path.file_name();
             self.push_file(file_name, metadata);
         } else {

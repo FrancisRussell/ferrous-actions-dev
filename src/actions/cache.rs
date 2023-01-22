@@ -1,9 +1,9 @@
 use crate::node;
 use crate::node::path::Path;
 use js_sys::JsString;
-use std::collections::HashMap;
 use std::convert::Into;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast as _;
 
 const WORKSPACE_ENV_VAR: &str = "GITHUB_WORKSPACE";
 const WORKSPACE_OVERRIDDEN_TAG: &str = "#WORKSPACE_OVERRIDEN";
@@ -228,12 +228,7 @@ impl Entry {
             )
             .await?
         };
-        if result == JsValue::NULL || result == JsValue::UNDEFINED {
-            Ok(None)
-        } else {
-            let result: JsString = result.into();
-            Ok(Some(result.into()))
-        }
+        Ok(result.dyn_ref::<JsString>().map(Into::into))
     }
 
     async fn peek_restore(&self) -> Result<Option<String>, JsValue> {
@@ -259,18 +254,8 @@ impl Entry {
             Ok(None)
         } else {
             let result: Object = result.into();
-            let entries = Object::entries(&result);
-            let mut entries: HashMap<String, JsValue> = entries
-                .iter()
-                .map(Into::<js_sys::Array>::into)
-                .map(|e| (e.get(0), e.get(1)))
-                .map(|(k, v)| (Into::<JsString>::into(k), v))
-                .map(|(k, v)| (Into::<String>::into(k), v))
-                .collect();
-            Ok(entries
-                .remove("cacheKey")
-                .map(Into::<JsString>::into)
-                .map(Into::<String>::into))
+            let cache_key = js_sys::Reflect::get(&result, &"cacheKey".into())?;
+            Ok(cache_key.dyn_ref::<JsString>().map(Into::into))
         }
     }
 }
