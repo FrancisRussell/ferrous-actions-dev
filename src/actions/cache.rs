@@ -3,6 +3,7 @@ use crate::node::path::Path;
 use js_sys::JsString;
 use std::convert::Into;
 use wasm_bindgen::prelude::*;
+use wasm_bindgen::JsCast as _;
 
 const WORKSPACE_ENV_VAR: &str = "GITHUB_WORKSPACE";
 const WORKSPACE_OVERRIDDEN_TAG: &str = "#WORKSPACE_OVERRIDEN";
@@ -227,17 +228,11 @@ impl Entry {
             )
             .await?
         };
-        if result == JsValue::NULL || result == JsValue::UNDEFINED {
-            Ok(None)
-        } else {
-            let result: JsString = result.into();
-            Ok(Some(result.into()))
-        }
+        Ok(result.dyn_ref::<JsString>().map(Into::into))
     }
 
     async fn peek_restore(&self) -> Result<Option<String>, JsValue> {
         use js_sys::Object;
-        use wasm_bindgen::JsCast as _;
 
         let compression_method: JsString = ffi::get_compression_method().await?.into();
         let keys: Vec<JsString> = std::iter::once(&self.key)
@@ -260,11 +255,7 @@ impl Entry {
         } else {
             let result: Object = result.into();
             let cache_key = js_sys::Reflect::get(&result, &"cacheKey".into())?;
-            Ok(if cache_key == JsValue::NULL || cache_key == JsValue::UNDEFINED {
-                None
-            } else {
-                cache_key.dyn_ref::<JsString>().map(Into::into)
-            })
+            Ok(cache_key.dyn_ref::<JsString>().map(Into::into))
         }
     }
 }
