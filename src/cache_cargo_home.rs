@@ -656,12 +656,6 @@ fn get_min_recache_interval(
     Ok(result)
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-struct CachedFolderInfo {
-    path: String,
-    fingerprint: Fingerprint,
-}
-
 fn dependency_file_path(cache_type: CacheType, scope: &HashValue, job: &Job) -> Result<Path, Error> {
     let dependency_dir = dependency_files_dir()?;
     let mut hasher = Blake3Hasher::default();
