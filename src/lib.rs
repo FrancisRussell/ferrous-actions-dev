@@ -5,6 +5,7 @@
     clippy::uninlined_format_args,
     clippy::missing_panics_doc
 )]
+#![cfg_attr(not(test), no_std)]
 
 mod access_times;
 mod action_paths;
@@ -33,6 +34,8 @@ mod safe_encoding;
 mod system;
 mod toolchain;
 mod utils;
+
+extern crate alloc;
 
 use crate::cargo::Cargo;
 use crate::error::Error;

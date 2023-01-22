@@ -3,14 +3,16 @@ pub use crate::dir_tree::Ignores;
 use crate::node::fs;
 use crate::node::path::{self, Path};
 use crate::{dir_tree, Error};
+use alloc::boxed::Box;
+use alloc::collections::{btree_map, BTreeMap, VecDeque};
+use alloc::string::String;
+use alloc::vec::Vec;
 use async_trait::async_trait;
+use beef::Cow;
 use chrono::{DateTime, Utc};
+use core::hash::{Hash, Hasher};
 use itertools::{Either, EitherOrBoth};
 use serde::{Deserialize, Serialize};
-use std::borrow::Cow;
-use std::collections::hash_map::DefaultHasher;
-use std::collections::{btree_map, BTreeMap, VecDeque};
-use std::hash::{Hash, Hasher};
 
 const ROOT_NAME: &str = ".";
 
@@ -115,7 +117,8 @@ impl Fingerprint {
     }
 
     fn compute_entry_hash(entry: &Entry) -> u64 {
-        let mut hasher = DefaultHasher::default();
+        use crate::hasher::Blake3;
+        let mut hasher = Blake3::default();
         match entry {
             Entry::File(metadata) => {
                 metadata.hash_noteworthy(&mut hasher);
@@ -223,8 +226,16 @@ impl dir_tree::Visitor for BuildFingerprintVisitor {
         if is_file {
             let stats = fs::symlink_metadata(path).await?;
             let metadata = Metadata::from(&stats);
-            self.modified = self.modified.into_iter().chain(std::iter::once(metadata.modified)).max();
-            self.accessed = self.accessed.into_iter().chain(std::iter::once(metadata.accessed)).max();
+            self.modified = self
+                .modified
+                .into_iter()
+                .chain(core::iter::once(metadata.modified))
+                .max();
+            self.accessed = self
+                .accessed
+                .into_iter()
+                .chain(core::iter::once(metadata.accessed))
+                .max();
             let file_name = path.file_name();
             self.push_file(file_name, metadata);
         } else {

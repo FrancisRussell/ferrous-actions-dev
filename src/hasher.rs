@@ -5,7 +5,7 @@ pub struct Blake3 {
     inner: blake3::Hasher,
 }
 
-impl std::hash::Hasher for Blake3 {
+impl core::hash::Hasher for Blake3 {
     fn finish(&self) -> u64 {
         let mut xof = self.inner.finalize_xof();
         let mut bytes = [0u8; 8];

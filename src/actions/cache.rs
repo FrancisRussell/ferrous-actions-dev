@@ -1,7 +1,9 @@
 use crate::node;
 use crate::node::path::Path;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::convert::Into;
 use js_sys::JsString;
-use std::convert::Into;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen::JsCast as _;
 
@@ -106,7 +108,7 @@ impl Entry {
     }
 
     pub fn path<P: Into<Path>>(&mut self, path: P) -> &mut Entry {
-        self.paths(std::iter::once(path.into()))
+        self.paths(core::iter::once(path.into()))
     }
 
     pub fn root<P: Into<Path>>(&mut self, path: P) -> &mut Entry {
@@ -129,7 +131,7 @@ impl Entry {
     }
 
     pub fn restore_key<K: Into<JsString>>(&mut self, restore_key: K) -> &mut Entry {
-        self.restore_keys(std::iter::once(restore_key.into()))
+        self.restore_keys(core::iter::once(restore_key.into()))
     }
 
     pub async fn save(&self) -> Result<i64, JsValue> {
@@ -235,7 +237,7 @@ impl Entry {
         use js_sys::Object;
 
         let compression_method: JsString = ffi::get_compression_method().await?.into();
-        let keys: Vec<JsString> = std::iter::once(&self.key)
+        let keys: Vec<JsString> = core::iter::once(&self.key)
             .chain(self.restore_keys.iter())
             .cloned()
             .collect();
@@ -261,6 +263,7 @@ impl Entry {
 }
 
 pub mod ffi {
+    use alloc::vec::Vec;
     use js_sys::{JsString, Object};
     use wasm_bindgen::prelude::*;
 

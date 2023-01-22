@@ -1,7 +1,10 @@
 use crate::node::path::Path;
+use alloc::collections::VecDeque;
+use alloc::string::String;
+use alloc::vec;
+use alloc::vec::Vec;
 use chrono::{DateTime, NaiveDateTime, Utc};
 use js_sys::{BigInt, JsString, Object, Uint8Array};
-use std::collections::VecDeque;
 use wasm_bindgen::{JsCast, JsError, JsValue};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -409,8 +412,8 @@ mod test {
     }
 
     fn get_random() -> u64 {
+        use core::hash::{Hash as _, Hasher as _};
         use std::collections::hash_map::DefaultHasher;
-        use std::hash::{Hash as _, Hasher as _};
 
         let id = {
             let mut guard = COUNTER.lock();

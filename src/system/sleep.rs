@@ -1,9 +1,9 @@
-use std::time::Duration;
+use core::time::Duration;
 
 pub async fn sleep(duration: &Duration) {
     use wasm_bindgen::closure::Closure;
 
-    let (sender, receiver) = futures::channel::oneshot::channel();
+    let (sender, receiver) = futures_channel::oneshot::channel();
     let mut sender = Some(sender);
     let callback: Closure<dyn FnMut()> = Closure::new(move || {
         if let Some(s) = sender.take() {

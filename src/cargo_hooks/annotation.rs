@@ -2,9 +2,12 @@ use super::Hook;
 use crate::actions::core::AnnotationLevel;
 use crate::actions::exec::Command;
 use crate::warning;
+use alloc::string::String;
+use alloc::vec::Vec;
+use alloc::{format, vec};
 use async_trait::async_trait;
+use beef::Cow;
 use cargo_metadata::diagnostic::{DiagnosticLevel, DiagnosticSpan};
-use std::borrow::Cow;
 
 #[derive(Default)]
 pub struct Annotation {

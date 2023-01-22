@@ -8,7 +8,9 @@ use crate::input_manager::{self, Input};
 use crate::node::path::Path;
 use crate::node::process;
 use crate::{node, nonce, Error};
-use std::borrow::Cow;
+use alloc::string::String;
+use alloc::vec::Vec;
+use beef::Cow;
 
 async fn create_empty_dir() -> Result<Path, Error> {
     let nonce = nonce::build(8);
@@ -68,8 +70,8 @@ impl Cargo {
     }
 
     pub async fn get_installed(&self) -> Result<Vec<String>, Error> {
+        use alloc::sync::Arc;
         use parking_lot::Mutex;
-        use std::sync::Arc;
 
         // This was added to help remove non-Rustup installed cargo-fmt and rustfmt on
         // the GitHub runners. However the binaries do not appear to be
@@ -138,15 +140,15 @@ impl Cargo {
         cwd: Option<&Path>,
     ) -> Result<ToolchainVersion, Error> {
         use crate::actions::exec::Stdio;
+        use alloc::sync::Arc;
         use parking_lot::Mutex;
-        use std::sync::Arc;
 
         let rustc_path = io::which("rustc", true).await.map_err(Error::Js)?;
         let mut command = Command::from(&rustc_path);
         let output: Arc<Mutex<String>> = Arc::default();
         let output_captured = output.clone();
         if let Some(toolchain) = toolchain {
-            command.arg(format!("+{}", toolchain).as_str());
+            command.arg(alloc::format!("+{}", toolchain).as_str());
         }
         if let Some(cwd) = cwd {
             command.current_dir(cwd);
@@ -177,7 +179,7 @@ impl Cargo {
         let args: Vec<String> = args.into_iter().map(Into::into).collect();
         let mut final_args = Vec::with_capacity(args.len());
         if let Some(toolchain) = toolchain {
-            final_args.push(format!("+{}", toolchain));
+            final_args.push(alloc::format!("+{}", toolchain));
         }
         let mut hooks = self
             .get_hooks_for_subcommand(toolchain, subcommand, &args[..], input_manager)

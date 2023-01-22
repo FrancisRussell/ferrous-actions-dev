@@ -4,10 +4,13 @@ use crate::node::path::Path;
 use crate::node::{self};
 use crate::rustup::ToolchainConfig;
 use crate::{actions, info, Error};
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::vec::Vec;
 use async_recursion::async_recursion;
+use core::str::FromStr;
 use rustup_toolchain_manifest::manifest::Package as ManifestPackage;
 use rustup_toolchain_manifest::Toolchain;
-use std::str::FromStr;
 use target_lexicon::Triple;
 
 const MAX_CONCURRENT_PACKAGE_INSTALLS: usize = 4;
@@ -45,7 +48,7 @@ fn default_target_for_platform() -> Result<Triple, Error> {
         ("x64", "darwin") => "x86_64-apple-darwin",
         ("x64", "linux") => "x86_64-unknown-linux-gnu",
         ("x64", "win32") => "x86_64-pc-windows-msvc",
-        (arch, platform) => return Err(Error::UnsupportedPlatform(format!("{}-{}", platform, arch))),
+        (arch, platform) => return Err(Error::UnsupportedPlatform(alloc::format!("{}-{}", platform, arch))),
     })
     .expect("Failed to parse hardcoded platform triple");
     Ok(target)

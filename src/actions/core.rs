@@ -1,39 +1,40 @@
 use crate::node::path::Path;
+use alloc::string::String;
 use js_sys::{JsString, Number, Object};
 use wasm_bindgen::JsValue;
 
 #[macro_export]
 macro_rules! debug {
     ($($arg:tt)*) => {{
-        $crate::actions::core::debug(std::format!($($arg)*).as_str());
+        $crate::actions::core::debug(alloc::format!($($arg)*).as_str());
     }};
 }
 
 #[macro_export]
 macro_rules! info {
     ($($arg:tt)*) => {{
-        $crate::actions::core::info(std::format!($($arg)*).as_str());
+        $crate::actions::core::info(alloc::format!($($arg)*).as_str());
     }};
 }
 
 #[macro_export]
 macro_rules! notice {
     ($($arg:tt)*) => {{
-        $crate::actions::core::notice(std::format!($($arg)*).as_str());
+        $crate::actions::core::notice(alloc::format!($($arg)*).as_str());
     }};
 }
 
 #[macro_export]
 macro_rules! warning {
     ($($arg:tt)*) => {{
-        $crate::actions::core::warning(std::format!($($arg)*).as_str());
+        $crate::actions::core::warning(alloc::format!($($arg)*).as_str());
     }};
 }
 
 #[macro_export]
 macro_rules! error {
     ($($arg:tt)*) => {{
-        $crate::actions::core::error(std::format!($($arg)*).as_str());
+        $crate::actions::core::error(alloc::format!($($arg)*).as_str());
     }};
 }
 

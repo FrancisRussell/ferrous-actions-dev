@@ -1,6 +1,7 @@
 use crate::action_paths::get_action_cache_dir;
 use crate::node::path::Path;
 use crate::{dir_tree, node, nonce, warning, Error};
+use alloc::boxed::Box;
 use async_trait::async_trait;
 
 const WAIT_ATIME_UPDATED_MS: u64 = 5;
@@ -81,7 +82,7 @@ pub async fn supports_atime() -> Result<bool, Error> {
     }
     node::fs::read_file(&file_path).await?;
     // Wait a few ms, just in case
-    sleep::sleep(&std::time::Duration::from_millis(WAIT_ATIME_UPDATED_MS)).await;
+    sleep::sleep(&core::time::Duration::from_millis(WAIT_ATIME_UPDATED_MS)).await;
     let metadata = node::fs::symlink_metadata(&file_path).await?;
     // This needs to be >= and not > since times are discrete
     Ok(metadata.accessed() >= metadata.modified())

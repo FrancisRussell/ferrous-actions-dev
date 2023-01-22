@@ -1,6 +1,8 @@
+use alloc::string::String;
+use alloc::vec;
+use beef::Cow;
 use js_sys::JsString;
 use lazy_static::lazy_static;
-use std::borrow::Cow;
 use wasm_bindgen::JsCast as _;
 
 #[derive(Clone)]
@@ -26,8 +28,8 @@ lazy_static! {
     };
 }
 
-impl std::fmt::Display for Path {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+impl core::fmt::Display for Path {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         let string = String::from(&self.inner);
         string.fmt(formatter)
     }
@@ -99,8 +101,8 @@ impl Path {
     }
 }
 
-impl std::fmt::Debug for Path {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+impl core::fmt::Debug for Path {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         write!(formatter, "{}", self)
     }
 }
@@ -159,6 +161,7 @@ pub fn separator() -> Cow<'static, str> {
 }
 
 pub mod ffi {
+    use alloc::vec::Vec;
     use js_sys::{JsString, Object};
     use wasm_bindgen::prelude::*;
 
@@ -269,7 +272,7 @@ mod test {
     fn check_current_normalization() {
         use itertools::Itertools as _;
         let current = ".";
-        let long_current = std::iter::repeat(current).take(10).join(&super::separator());
+        let long_current = core::iter::repeat(current).take(10).join(&super::separator());
         assert_eq!(Path::from(&long_current).to_string(), current);
     }
 
@@ -280,15 +283,15 @@ mod test {
         let current = ".";
         let count = 10;
 
-        let long_current = std::iter::repeat("child")
+        let long_current = core::iter::repeat("child")
             .take(count)
-            .chain(std::iter::repeat(parent).take(count))
+            .chain(core::iter::repeat(parent).take(count))
             .join(&super::separator());
         assert_eq!(Path::from(&long_current).to_string(), current);
 
-        let long_parent = std::iter::repeat("child")
+        let long_parent = core::iter::repeat("child")
             .take(count)
-            .chain(std::iter::repeat(parent).take(count + 1))
+            .chain(core::iter::repeat(parent).take(count + 1))
             .join(&super::separator());
         assert_eq!(Path::from(&long_parent).to_string(), parent);
     }

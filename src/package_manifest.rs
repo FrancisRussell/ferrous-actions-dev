@@ -1,5 +1,7 @@
 use crate::node::path::Path;
-use std::str::FromStr;
+use alloc::string::String;
+use alloc::vec::Vec;
+use core::str::FromStr;
 use thiserror::Error;
 
 #[derive(Debug, Clone, Copy)]
@@ -36,7 +38,7 @@ pub struct PackageManifest {
 }
 
 impl PackageManifest {
-    pub fn iter(&self) -> std::slice::Iter<'_, (EntryType, Path)> {
+    pub fn iter(&self) -> core::slice::Iter<'_, (EntryType, Path)> {
         self.entries.iter()
     }
 }

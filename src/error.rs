@@ -1,4 +1,5 @@
 use crate::package_manifest;
+use alloc::string::String;
 use thiserror::Error;
 use wasm_bindgen::JsValue;
 

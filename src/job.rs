@@ -1,7 +1,8 @@
 use crate::actions::core;
 use crate::Error;
+use alloc::collections::BTreeMap;
+use alloc::string::String;
 use serde::de::DeserializeOwned;
-use std::collections::BTreeMap;
 
 const JOB_INPUT: &str = "internal-use-github-job";
 const MATRIX_INPUT: &str = "internal-use-matrix";

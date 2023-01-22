@@ -1,3 +1,5 @@
+use alloc::string::String;
+use alloc::vec::Vec;
 use base64::engine::general_purpose::GeneralPurpose;
 use base64::Engine as _;
 

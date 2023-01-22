@@ -1,4 +1,5 @@
 use crate::system::rng;
+use alloc::vec;
 use rustup_toolchain_manifest::HashValue;
 
 pub fn build(num_bytes: usize) -> HashValue {

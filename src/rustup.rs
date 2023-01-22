@@ -2,8 +2,10 @@ use crate::actions::exec::Command;
 use crate::actions::{core, io, tool_cache};
 use crate::node::path::Path;
 use crate::{debug, info, node, Error};
+use alloc::string::String;
+use alloc::sync::Arc;
+use alloc::vec::Vec;
 use parking_lot::Mutex;
-use std::sync::Arc;
 
 const NO_DEFAULT_TOOLCHAIN_NAME: &str = "none";
 

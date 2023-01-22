@@ -3,6 +3,8 @@ use crate::cross::Cross;
 use crate::input_manager::{Input, Manager as InputManager};
 use crate::rustup::{self, ToolchainConfig};
 use crate::{node, toolchain, warning, Cargo, Error};
+use alloc::string::String;
+use alloc::vec::Vec;
 
 fn get_toolchain_config(input_manager: &InputManager) -> Result<ToolchainConfig, Error> {
     let mut toolchain_config = ToolchainConfig::default();

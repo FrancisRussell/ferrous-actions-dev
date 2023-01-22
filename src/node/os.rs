@@ -1,7 +1,8 @@
 use super::path;
+use alloc::string::String;
+use beef::Cow;
 use js_sys::JsString;
 use lazy_static::lazy_static;
-use std::borrow::Cow;
 
 lazy_static! {
     static ref EOL: String = {

@@ -1,8 +1,10 @@
 use crate::node::path::Path;
 use crate::node::process;
+use alloc::string::String;
+use alloc::vec;
+use beef::Cow;
+use core::convert::Into;
 use js_sys::JsString;
-use std::borrow::Cow;
-use std::convert::Into;
 use wasm_bindgen::prelude::*;
 
 #[derive(Debug)]
@@ -93,6 +95,7 @@ pub async fn cache_dir(tool: &str, version: &str, path: &Path, arch: Option<&str
 }
 
 pub mod ffi {
+    use alloc::vec::Vec;
     use js_sys::{JsString, Map};
     use wasm_bindgen::prelude::*;
 

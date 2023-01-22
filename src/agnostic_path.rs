@@ -1,5 +1,7 @@
 use crate::node;
 use crate::node::path::Path;
+use alloc::string::String;
+use alloc::vec::Vec;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Deserialize, Eq, Hash, Ord, PartialEq, PartialOrd, Serialize)]
@@ -44,8 +46,8 @@ impl From<&AgnosticPath> for Path {
     }
 }
 
-impl std::fmt::Display for AgnosticPath {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter<'_>) -> Result<(), std::fmt::Error> {
+impl core::fmt::Display for AgnosticPath {
+    fn fmt(&self, formatter: &mut core::fmt::Formatter<'_>) -> Result<(), core::fmt::Error> {
         let string = self.to_string_with_separator("/");
         string.fmt(formatter)
     }

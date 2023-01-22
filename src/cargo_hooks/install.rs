@@ -7,9 +7,13 @@ use crate::fingerprinting::Fingerprint;
 use crate::hasher::Blake3 as Blake3Hasher;
 use crate::node::path::Path;
 use crate::{actions, error, info, node, warning, Error};
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::vec;
+use alloc::vec::Vec;
 use async_trait::async_trait;
+use beef::Cow;
 use rustup_toolchain_manifest::HashValue;
-use std::borrow::Cow;
 
 const MAX_ARG_STRING_LENGTH: usize = 80;
 
@@ -37,7 +41,7 @@ impl Install {
         I: IntoIterator<Item = A>,
         A: AsRef<str>,
     {
-        use std::hash::Hash as _;
+        use core::hash::Hash as _;
 
         let mut hasher = Blake3Hasher::default();
         toolchain_version.long().hash(&mut hasher);

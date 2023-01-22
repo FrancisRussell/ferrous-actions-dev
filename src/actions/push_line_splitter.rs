@@ -1,5 +1,7 @@
-use std::borrow::Cow;
-use std::collections::VecDeque;
+use alloc::collections::VecDeque;
+use alloc::string::String;
+use alloc::vec::Vec;
+use beef::Cow;
 
 /// A platform-agnostic line splitter.
 ///

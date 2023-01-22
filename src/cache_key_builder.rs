@@ -1,7 +1,9 @@
 use crate::actions::cache::Entry as CacheEntry;
 use crate::hasher::Blake3 as Blake3Hasher;
 use crate::{node, safe_encoding};
-use std::collections::BTreeMap;
+use alloc::collections::BTreeMap;
+use alloc::format;
+use alloc::string::String;
 
 const CACHE_ENTRY_VERSION: &str = "18";
 
@@ -77,7 +79,7 @@ impl CacheKeyBuilder {
         result
     }
 
-    pub fn add_key_data<T: std::hash::Hash + ?Sized>(&mut self, data: &T) {
+    pub fn add_key_data<T: core::hash::Hash + ?Sized>(&mut self, data: &T) {
         data.hash(&mut self.hasher);
     }
 
@@ -90,8 +92,8 @@ impl CacheKeyBuilder {
     }
 
     fn restore_key_to_save_key(restore_key: &str, attributes: &BTreeMap<&str, (String, bool)>) -> String {
+        use core::fmt::Write as _;
         use itertools::Itertools as _;
-        use std::fmt::Write as _;
 
         let mut save_key = restore_key.to_string();
         if !attributes.is_empty() {
@@ -108,7 +110,7 @@ impl CacheKeyBuilder {
     }
 
     fn build_restore_key(name: &str, mut hasher: Blake3Hasher, attributes: &BTreeMap<&str, (String, bool)>) -> String {
-        use std::hash::Hash as _;
+        use core::hash::Hash as _;
 
         let id = {
             attributes

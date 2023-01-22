@@ -1,6 +1,5 @@
 use crate::action_paths::get_action_cache_dir;
 use crate::actions::cache::Entry as CacheEntry;
-use crate::actions::core;
 use crate::agnostic_path::AgnosticPath;
 use crate::delta::{render_list as render_delta_list, Action as DeltaAction};
 use crate::dir_tree::match_relative_paths;
@@ -11,15 +10,18 @@ use crate::job::Job;
 use crate::node::os::homedir;
 use crate::node::path::Path;
 use crate::{actions, error, info, node, notice, safe_encoding, warning, Error};
+use alloc::collections::{BTreeMap, BTreeSet};
+use alloc::format;
+use alloc::string::String;
+use alloc::vec::Vec;
+use beef::Cow;
 use chrono::{DateTime, Utc};
+use core::hash::Hash as _;
+use core::str::FromStr;
 use lazy_static::lazy_static;
 use rustup_toolchain_manifest::HashValue;
 use serde::{Deserialize, Serialize};
 use simple_path_match::{PathMatch, PathMatchBuilder};
-use std::borrow::Cow;
-use std::collections::{BTreeMap, HashMap, HashSet};
-use std::hash::Hash as _;
-use std::str::FromStr;
 use strum::{Display, EnumIter, EnumString, IntoEnumIterator, IntoStaticStr};
 
 const ATIMES_SUPPORTED_KEY: &str = "ACCESS_TIMES_SUPPORTED";
@@ -96,13 +98,13 @@ struct GroupIdentifier {
 
 impl Cache {
     pub async fn new(cache_type: CacheType) -> Result<Cache, Error> {
-        let sources = HashMap::new();
+        let sources = BTreeMap::new();
         Self::new_with_sources(cache_type, sources).await
     }
 
     async fn new_with_sources(
         cache_type: CacheType,
-        mut sources: HashMap<AgnosticPath, String>,
+        mut sources: BTreeMap<AgnosticPath, String>,
     ) -> Result<Cache, Error> {
         // Delete derived content at any paths we want to build the cache at
         for delete_path in find_additional_delete_paths(cache_type).await? {
@@ -182,7 +184,7 @@ impl Cache {
 
         let entry = build_cache_entry_dependencies(cache_type, scope, &job)?;
         let restore_key = entry.restore().await.map_err(Error::Js)?;
-        let mut restore_keys = HashMap::new();
+        let mut restore_keys = BTreeMap::new();
         if let Some(restore_key) = restore_key {
             info!(
                 "Located dependencies list for {} in cache using key {}.",
@@ -245,7 +247,7 @@ impl Cache {
         } else {
             info!("{} dependency list changed:", self.cache_type.friendly_name());
             info!("{}", render_delta_list(&group_list_delta));
-            let serialized_groups = postcard::to_stdvec(&new_groups)?;
+            let serialized_groups = postcard::to_allocvec(&new_groups)?;
             {
                 let parent = dep_file_path.parent();
                 node::fs::create_dir_all(&parent).await?;
@@ -270,7 +272,7 @@ impl Cache {
                     let old_modification = old_group.last_modified().unwrap_or_default();
                     // Be robust against our delta being negative.
                     let modification_delta = chrono::Utc::now() - old_modification;
-                    let modification_delta = std::cmp::max(chrono::Duration::zero(), modification_delta);
+                    let modification_delta = core::cmp::max(chrono::Duration::zero(), modification_delta);
 
                     let interval_is_sufficient = modification_delta > *min_recache_interval;
                     if interval_is_sufficient {
@@ -404,7 +406,7 @@ impl Cache {
         builder.set_attribute(Attribute::NumEntries, group_id.num_entries.to_string());
         let entries_hash = {
             let lsb: &[u8] = group_id.entries_hash.as_ref();
-            let lsb = &lsb[..std::cmp::min(8, lsb.len())];
+            let lsb = &lsb[..core::cmp::min(8, lsb.len())];
             safe_encoding::encode(lsb)
         };
         builder.set_attribute(Attribute::EntriesHash, entries_hash);
@@ -493,7 +495,7 @@ fn depth_to_match(depth: usize) -> Result<PathMatch, Error> {
     let pattern = if depth == 0 {
         ".".into()
     } else {
-        std::iter::repeat("*").take(depth).join("/")
+        core::iter::repeat("*").take(depth).join("/")
     };
     Ok(PathMatch::from_pattern(&pattern, &node::path::separator())?)
 }
@@ -629,7 +631,7 @@ fn get_cross_platform_sharing(input_manager: &input_manager::Manager) -> Result<
 }
 
 fn get_types_to_cache(input_manager: &input_manager::Manager) -> Result<Vec<CacheType>, Error> {
-    let mut result = HashSet::new();
+    let mut result = BTreeSet::new();
     if let Some(types) = input_manager.get(Input::CacheOnly) {
         let types = types.split_whitespace();
         for cache_type in types {
@@ -703,7 +705,7 @@ pub async fn restore_cargo_cache(input_manager: &input_manager::Manager) -> Resu
             "Note that enabling file access times on Windows is generally a bad idea since Microsoft never implemented relatime semantics.")
         );
     }
-    core::save_state(ATIMES_SUPPORTED_KEY, serde_json::to_string(&atimes_supported)?);
+    actions::core::save_state(ATIMES_SUPPORTED_KEY, serde_json::to_string(&atimes_supported)?);
 
     let scope_hash = if atimes_supported {
         // We can't use the empty array because it will encode to an empty string, which
@@ -714,42 +716,43 @@ pub async fn restore_cargo_cache(input_manager: &input_manager::Manager) -> Resu
         let lock_hash = hash_cargo_lock_files(&cwd).await?;
         HashValue::from_bytes(&lock_hash.bytes)
     };
-    core::save_state(SCOPE_HASH_KEY, safe_encoding::encode(&scope_hash));
+    actions::core::save_state(SCOPE_HASH_KEY, safe_encoding::encode(&scope_hash));
 
     let cross_platform_sharing = get_cross_platform_sharing(input_manager)?;
     let cached_types = get_types_to_cache(input_manager)?;
     for cache_type in cached_types {
-        core::start_group(cache_type.friendly_name().to_string());
+        actions::core::start_group(cache_type.friendly_name().to_string());
         // Mark as used to avoid spurious warnings (we only use this when we save the
         // entries)
         let _ = get_min_recache_interval(input_manager, cache_type)?;
 
         // Build the cache
         let cache = Cache::restore_from_env(cache_type, &scope_hash, cross_platform_sharing).await?;
-        let serialized_cache = postcard::to_stdvec(&cache)?;
+        let serialized_cache = postcard::to_allocvec(&cache)?;
         let cached_info_path = cached_folder_info_path(cache_type)?;
         {
             let parent = cached_info_path.parent();
             node::fs::create_dir_all(&parent).await?;
         }
         node::fs::write_file(&cached_info_path, &serialized_cache).await?;
-        core::end_group();
+        actions::core::end_group();
     }
     Ok(())
 }
 
 pub async fn save_cargo_cache(input_manager: &input_manager::Manager) -> Result<(), Error> {
-    let scope_hash = core::get_state(SCOPE_HASH_KEY).expect("Failed to find scope ID hash");
+    let scope_hash = actions::core::get_state(SCOPE_HASH_KEY).expect("Failed to find scope ID hash");
     let scope_hash = safe_encoding::decode(&scope_hash).expect("Failed to decode scope ID hash");
     let scope_hash = HashValue::from_bytes(&scope_hash);
 
-    let atimes_supported = core::get_state(ATIMES_SUPPORTED_KEY).expect("Failed to find access times support flag");
+    let atimes_supported =
+        actions::core::get_state(ATIMES_SUPPORTED_KEY).expect("Failed to find access times support flag");
     let atimes_supported: bool = serde_json::de::from_str(&atimes_supported)?;
 
     let cross_platform_sharing = get_cross_platform_sharing(input_manager)?;
     let cached_types = get_types_to_cache(input_manager)?;
     for cache_type in cached_types {
-        core::start_group(cache_type.friendly_name().to_string());
+        actions::core::start_group(cache_type.friendly_name().to_string());
         // Delete items that should never make it into the cache
         for delete_path in find_additional_delete_paths(cache_type).await? {
             if delete_path.exists().await {
@@ -789,7 +792,7 @@ pub async fn save_cargo_cache(input_manager: &input_manager::Manager) -> Result<
         cache
             .save_changes(&cache_old, &scope_hash, &min_recache_interval, cross_platform_sharing)
             .await?;
-        core::end_group();
+        actions::core::end_group();
     }
     Ok(())
 }

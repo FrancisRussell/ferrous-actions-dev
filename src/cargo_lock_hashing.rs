@@ -1,6 +1,9 @@
 use crate::dir_tree::{self, Ignores};
 use crate::node::path::Path;
 use crate::{node, Error};
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::vec::Vec;
 use async_trait::async_trait;
 
 #[derive(Debug)]

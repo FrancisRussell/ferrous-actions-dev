@@ -1,6 +1,8 @@
 use crate::actions::exec::Command;
+use alloc::boxed::Box;
+use alloc::vec::Vec;
 use async_trait::async_trait;
-use std::borrow::Cow;
+use beef::Cow;
 
 #[async_trait(?Send)]
 pub trait Hook {

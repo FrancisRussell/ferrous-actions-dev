@@ -40,7 +40,7 @@ impl MathRandom {
             if self.taken >= self.bytes.len() {
                 self.refill();
             }
-            let to_take = std::cmp::min(self.bytes.len() - self.taken, dest.len() - written);
+            let to_take = core::cmp::min(self.bytes.len() - self.taken, dest.len() - written);
             dest[written..(written + to_take)].copy_from_slice(&self.bytes[self.taken..(self.taken + to_take)]);
             self.taken += to_take;
             written += to_take;

@@ -317,12 +317,14 @@ dependencies = [
  "async-recursion",
  "async-trait",
  "base64",
+ "beef",
  "blake3",
  "cargo_metadata",
  "chrono",
  "console_error_panic_hook",
  "derivative",
  "futures",
+ "futures-channel",
  "humantime",
  "itertools",
  "js-sys",
@@ -397,15 +399,11 @@ version = "0.3.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "197676987abd2f9cadff84926f410af1c183608d36641465df73ae8211dc65d6"
 dependencies = [
- "futures-channel",
  "futures-core",
- "futures-io",
  "futures-sink",
  "futures-task",
- "memchr",
  "pin-project-lite",
  "pin-utils",
- "slab",
 ]
 
 [[package]]
@@ -544,12 +542,6 @@ checksum = "abb12e687cfb44aa40f41fc3978ef76448f9b6038cad6aef4259d3c095a2382e"
 dependencies = [
  "cfg-if",
 ]
-
-[[package]]
-name = "memchr"
-version = "2.5.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2dffe52ecf27772e601905b7522cb4ef790d2cc203488bbd0e2fe85fcb74566d"
 
 [[package]]
 name = "num-integer"
@@ -803,15 +795,6 @@ source = "git+https://github.com/FrancisRussell/simple-path-match.git?rev=cbd26c
 dependencies = [
  "beef",
  "snafu",
-]
-
-[[package]]
-name = "slab"
-version = "0.4.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4614a76b2a8be0058caa9dbbaf66d988527d86d003c11a94fbd335d7661edcef"
-dependencies = [
- "autocfg",
 ]
 
 [[package]]

@@ -1,17 +1,20 @@
 use crate::node::fs;
 use crate::node::path::Path;
 use crate::Error;
+use alloc::boxed::Box;
+use alloc::collections::{BTreeMap, BTreeSet, VecDeque};
+use alloc::string::String;
+use alloc::vec::Vec;
 use async_recursion::async_recursion;
 use async_trait::async_trait;
+use beef::Cow;
 use simple_path_match::PathMatch;
-use std::borrow::Cow;
-use std::collections::{HashMap, HashSet, VecDeque};
 
 pub const ROOT_NAME: &str = ".";
 
 #[derive(Debug, Default, Clone)]
 pub struct Ignores {
-    map: HashMap<usize, HashSet<String>>,
+    map: BTreeMap<usize, BTreeSet<String>>,
 }
 
 impl Ignores {

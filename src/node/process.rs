@@ -1,12 +1,13 @@
 use super::path::{self, Path};
-use std::collections::HashMap;
+use alloc::collections::BTreeMap;
+use alloc::string::String;
 use wasm_bindgen::JsValue;
 
 pub fn cwd() -> path::Path {
     path::Path::from(ffi::cwd())
 }
 
-pub fn get_env() -> HashMap<String, String> {
+pub fn get_env() -> BTreeMap<String, String> {
     use js_sys::JsString;
     use wasm_bindgen::JsCast as _;
 

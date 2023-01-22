@@ -1,9 +1,12 @@
 use super::push_line_splitter::PushLineSplitter;
 use crate::node::path::Path;
 use crate::{node, noop_stream};
+use alloc::boxed::Box;
+use alloc::string::String;
+use alloc::sync::Arc;
+use alloc::vec::Vec;
 use js_sys::{JsString, Object};
 use parking_lot::Mutex;
-use std::sync::Arc;
 use wasm_bindgen::closure::Closure;
 use wasm_bindgen::JsValue;
 
@@ -103,7 +106,7 @@ impl Command {
     }
 
     pub fn arg<S: Into<JsString>>(&mut self, arg: S) -> &mut Command {
-        self.args(std::iter::once(arg.into()));
+        self.args(core::iter::once(arg.into()));
         self
     }
 
@@ -213,6 +216,7 @@ impl<'a> From<&'a Path> for Command {
 }
 
 pub mod ffi {
+    use alloc::vec::Vec;
     use js_sys::JsString;
     use wasm_bindgen::prelude::*;
 

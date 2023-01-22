@@ -1,7 +1,8 @@
 use crate::actions::core;
 use crate::Error;
+use alloc::collections::{BTreeMap, BTreeSet};
+use alloc::string::String;
 use parking_lot::Mutex;
-use std::collections::{HashMap, HashSet};
 use strum::{EnumIter, IntoEnumIterator as _, IntoStaticStr};
 
 #[derive(IntoStaticStr, Clone, Copy, Debug, EnumIter, Eq, Hash, PartialEq, strum::Display)]
@@ -55,13 +56,13 @@ pub enum Input {
 
 #[derive(Debug)]
 pub struct Manager {
-    inputs: HashMap<Input, String>,
-    accessed: Mutex<HashSet<Input>>,
+    inputs: BTreeMap<Input, String>,
+    accessed: Mutex<BTreeSet<Input>>,
 }
 
 impl Manager {
     pub fn build() -> Result<Manager, Error> {
-        let mut inputs = HashMap::new();
+        let mut inputs = BTreeMap::new();
         for input in Input::iter() {
             let input_name: &str = input.into();
             if let Some(value) = core::Input::from(input_name).get()? {
@@ -86,8 +87,8 @@ impl Manager {
         })
     }
 
-    pub fn unused(&self) -> HashSet<Input> {
-        let available: HashSet<_> = self.inputs.keys().copied().collect();
+    pub fn unused(&self) -> BTreeSet<Input> {
+        let available: BTreeSet<_> = self.inputs.keys().copied().collect();
         &available - &self.accessed.lock()
     }
 }

@@ -1,6 +1,6 @@
 use crate::{node, Error};
+use beef::Cow;
 use node::path::Path;
-use std::borrow::Cow;
 
 pub fn get_action_name() -> Cow<'static, str> {
     "ferrous-actions".into()
