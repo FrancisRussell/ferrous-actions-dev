@@ -6,9 +6,29 @@
     clippy::missing_panics_doc
 )]
 
+//! This crate can be compiled so that only the node.js, and optionally also the
+//! GitHub Actions Toolkit bindings, are present. To do this, use the
+//! `default-features = false` option when depending on this crate and specify
+//! the `node_bindings` and / or `github_actions_bindings` features.
+//!
+//! This crate is versioned according to compatibility of the "Ferrous actions"
+//! action, not API compatibility. These bindings can and likely will change in
+//! breaking ways and are mainly exposed and documented to enable more insight
+//! into this crate's internals and for experimentation purposes.
+
+/// Bindings for [node.js](https://nodejs.org/docs/latest/api/)
+#[cfg(feature = "node_bindings")]
+pub mod node;
+
+/// Bindings for the [GitHub Actions Toolkit](https://github.com/actions/toolkit)
+#[cfg(feature = "github_actions_bindings")]
+pub mod actions;
+
+cfg_if::cfg_if! {
+if #[cfg(feature = "action")] {
+
 mod access_times;
 mod action_paths;
-mod actions;
 mod agnostic_path;
 mod cache_cargo_home;
 mod cache_key_builder;
@@ -23,7 +43,6 @@ mod fingerprinting;
 mod hasher;
 mod input_manager;
 mod job;
-mod node;
 mod nonce;
 mod noop_stream;
 mod package_manifest;
@@ -36,10 +55,15 @@ mod utils;
 
 use crate::cargo::Cargo;
 use crate::error::Error;
-use wasm_bindgen::prelude::{wasm_bindgen, JsValue};
 
-#[wasm_bindgen(start)]
-pub async fn start() -> Result<(), JsValue> {
+/// Entry point for Ferrous Actions.
+///
+/// If you want to use the node.js or GitHub Actions Toolkit bindings, you must set
+/// `default-features = false` and enable only the bindings you want so this function
+/// is not included in the dependency.
+#[cfg(feature = "action")]
+#[wasm_bindgen::prelude::wasm_bindgen(start)]
+pub async fn start() -> Result<(), wasm_bindgen::JsValue> {
     use crate::actions::core;
 
     // Perhaps we need a hook that calls core::set_failed() on panic.
@@ -51,4 +75,7 @@ pub async fn start() -> Result<(), JsValue> {
         core::set_failed(e.to_string());
     }
     Ok(())
+}
+
+}
 }

@@ -157,9 +157,9 @@ impl Command {
     }
 
     /// Sets a callback to be called each time a new line is written to standard
-    /// output. Note that line splitting is done by an internal re-implementation
-    /// of line splitting and not the GitHub Actions Toolkit one due to
-    /// issues with the latter.
+    /// output. Note that line splitting is done by an internal
+    /// re-implementation of line splitting and not the GitHub Actions
+    /// Toolkit one due to issues with the latter.
     pub fn outline<F: Fn(&str) + 'static>(&mut self, callback: F) -> &mut Command {
         self.outline = Some(Arc::new(Box::new(callback)));
         self
