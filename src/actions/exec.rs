@@ -1,6 +1,7 @@
+use super::noop_stream;
 use super::push_line_splitter::PushLineSplitter;
+use crate::node;
 use crate::node::path::Path;
-use crate::{node, noop_stream};
 use js_sys::{JsString, Object};
 use parking_lot::Mutex;
 use std::sync::Arc;

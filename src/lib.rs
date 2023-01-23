@@ -44,7 +44,6 @@ mod hasher;
 mod input_manager;
 mod job;
 mod nonce;
-mod noop_stream;
 mod package_manifest;
 mod run;
 mod rustup;
