@@ -258,7 +258,7 @@ impl Annotation {
     }
 }
 
-/// Retrives the action input of the specified name
+/// Retrieves the action input of the specified name
 pub fn get_input<I: Into<Input>>(input: I) -> Result<Option<String>, JsValue> {
     let mut input = input.into();
     input.get()
@@ -288,7 +288,7 @@ pub fn save_state<N: Into<JsString>, V: Into<JsString>>(name: N, value: V) {
     ffi::save_state(&name, &value);
 }
 
-/// Retrives previously saved action state
+/// Retrieves previously saved action state
 pub fn get_state<N: Into<JsString>>(name: N) -> Option<String> {
     let name = name.into();
     let value: String = ffi::get_state(&name).into();

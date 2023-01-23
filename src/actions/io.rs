@@ -2,7 +2,7 @@ use crate::node::path::Path;
 use js_sys::JsString;
 use wasm_bindgen::JsValue;
 
-/// Locates the absolute path of the command with the specicied name. If `check`
+/// Locates the absolute path of the command with the specified name. If `check`
 /// is set, an error will be returned if the command doesn't exist.
 pub async fn which<T: Into<JsString>>(tool: T, check: bool) -> Result<Path, JsValue> {
     let path = ffi::which(&tool.into(), Some(check)).await?;

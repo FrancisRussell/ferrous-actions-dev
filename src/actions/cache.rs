@@ -83,7 +83,7 @@ impl Drop for ScopedWorkspace {
     }
 }
 
-/// Saves and retrives cache entries
+/// Saves and retrieves cache entries
 pub struct Entry {
     key: JsString,
     paths: Vec<Path>,
@@ -228,7 +228,7 @@ impl Entry {
                     result.push('?');
                 }
                 '\\' if !is_windows => {
-                    // The glob syntax is platform specific, because of course it is. Blackslash is
+                    // The glob syntax is platform specific, because of course it is. Backslash is
                     // escape on Unix-like platforms, even in a character set. See
                     // `internal-pattern.ts`.
                     result.extend(['\\', c]);

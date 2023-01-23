@@ -108,7 +108,7 @@ impl Command {
         self
     }
 
-    /// Specifiy a command argument
+    /// Specify a command argument
     pub fn arg<S: Into<JsString>>(&mut self, arg: S) -> &mut Command {
         self.args(std::iter::once(arg.into()));
         self
@@ -150,21 +150,25 @@ impl Command {
             code
         });
 
-        // Be explict about line-buffer flushing
+        // Be explicit about line-buffer flushing
         drop(outline_adapter);
         drop(errline_adapter);
         result
     }
 
     /// Sets a callback to be called each time a new line is written to standard
-    /// output
+    /// output. Note that line splitting is done by an internal re-implementation
+    /// of line splitting and not the GitHub Actions Toolkit one due to
+    /// issues with the latter.
     pub fn outline<F: Fn(&str) + 'static>(&mut self, callback: F) -> &mut Command {
         self.outline = Some(Arc::new(Box::new(callback)));
         self
     }
 
     /// Sets a callback to be called each time a new line is written to standard
-    /// error
+    /// error. Note that line splitting is done by an internal re-implementation
+    /// of line splitting and not the GitHub Actions Toolkit one due to
+    /// issues with the latter.
     pub fn errline<F: Fn(&str) + 'static>(&mut self, callback: F) -> &mut Command {
         self.errline = Some(Arc::new(Box::new(callback)));
         self
