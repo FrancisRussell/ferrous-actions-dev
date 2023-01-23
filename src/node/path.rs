@@ -3,6 +3,7 @@ use lazy_static::lazy_static;
 use std::borrow::Cow;
 use wasm_bindgen::JsCast as _;
 
+/// Represents a path for the underlying platform
 #[derive(Clone)]
 pub struct Path {
     inner: JsString,
@@ -48,6 +49,9 @@ impl PartialEq for Path {
 }
 
 impl Path {
+    /// Pushes the supplied path onto this one.
+    ///
+    /// If the supplied path is absolute, it will replace this one entirely.
     pub fn push<P: Into<Path>>(&mut self, path: P) {
         let path = path.into();
         let joined = if path.is_absolute() {
@@ -58,29 +62,35 @@ impl Path {
         self.inner = joined;
     }
 
+    /// Returns the path as a JavaScript string
     pub fn to_js_string(&self) -> JsString {
         self.inner.clone()
     }
 
+    /// Returns the parent path
     #[must_use]
     pub fn parent(&self) -> Path {
         let parent = ffi::dirname(&self.inner);
         Path { inner: parent }
     }
 
+    /// Returns `true` if the path is absolute, `false` otherwise
     pub fn is_absolute(&self) -> bool {
         ffi::is_absolute(&self.inner)
     }
 
+    /// The basename of the path
     pub fn file_name(&self) -> String {
         let result = ffi::basename(&self.inner, None);
         result.into()
     }
 
+    /// Returns `true` if the path can be determined to exist
     pub async fn exists(&self) -> bool {
         super::fs::ffi::access(&self.inner, None).await.is_ok()
     }
 
+    /// Combines two paths to form a new one. See `join`.
     #[must_use]
     pub fn join<P: Into<Path>>(&self, path: P) -> Path {
         let mut result = self.clone();
@@ -88,6 +98,7 @@ impl Path {
         result
     }
 
+    /// Returns this path relative to the supplied path
     pub fn relative_to<P: Into<Path>>(&self, path: P) -> Path {
         let path = path.into();
         let relative = ffi::relative(&path.inner, &self.inner);
@@ -150,14 +161,17 @@ impl From<&Path> for JsString {
     }
 }
 
+/// Returns the delimiter used to combined paths into a list
 pub fn delimiter() -> Cow<'static, str> {
     DELIMITER.as_str().into()
 }
 
+/// Returns the separator for path components for this platform
 pub fn separator() -> Cow<'static, str> {
     SEPARATOR.as_str().into()
 }
 
+/// Low-level bindings for node.js path functions
 pub mod ffi {
     use js_sys::{JsString, Object};
     use wasm_bindgen::prelude::*;

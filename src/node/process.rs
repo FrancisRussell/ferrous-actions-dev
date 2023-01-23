@@ -2,10 +2,12 @@ use super::path::{self, Path};
 use std::collections::HashMap;
 use wasm_bindgen::JsValue;
 
+/// Returns the current working directory of the process
 pub fn cwd() -> path::Path {
     path::Path::from(ffi::cwd())
 }
 
+/// Returns a map of all environment variables defined for the process
 pub fn get_env() -> HashMap<String, String> {
     use js_sys::JsString;
     use wasm_bindgen::JsCast as _;
@@ -23,6 +25,7 @@ pub fn get_env() -> HashMap<String, String> {
     env
 }
 
+/// Set an environment variable to a specified value
 pub fn set_var(name: &str, value: &str) {
     use js_sys::{JsString, Map, Object};
 
@@ -37,16 +40,19 @@ pub fn set_var(name: &str, value: &str) {
     Object::define_property(&ffi::ENV, &name, &attributes);
 }
 
+/// Removes an environment variable
 pub fn remove_var(name: &str) {
     js_sys::Reflect::delete_property(&ffi::ENV, &name.into()).expect("process.env wasn't an object");
 }
 
+/// Changes the current working directory to the specified path
 pub fn chdir<P: Into<Path>>(path: P) -> Result<(), JsValue> {
     let path = path.into();
     ffi::chdir(&path.to_js_string())?;
     Ok(())
 }
 
+/// Low-level bindings for node.js process functions and variables
 pub mod ffi {
     use js_sys::{JsString, Object};
     use wasm_bindgen::prelude::*;

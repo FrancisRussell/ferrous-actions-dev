@@ -14,30 +14,37 @@ lazy_static! {
     };
 }
 
+/// Returns the end-of-line marker for the platform
 pub fn eol() -> Cow<'static, str> {
     EOL.as_str().into()
 }
 
+/// The name of the underlying platform
 pub fn platform() -> String {
     ffi::platform().into()
 }
 
+/// The name of the machine type
 pub fn machine() -> String {
     ffi::machine().into()
 }
 
+/// The architecture
 pub fn arch() -> String {
     ffi::arch().into()
 }
 
+/// Path to the current user's home directory
 pub fn homedir() -> path::Path {
     path::Path::from(ffi::homedir())
 }
 
+/// Path to the temporary directory
 pub fn temp_dir() -> path::Path {
     path::Path::from(ffi::tmpdir())
 }
 
+/// Low-level bindings for node.js operating system functions
 pub mod ffi {
     use js_sys::{JsString, Object};
     use wasm_bindgen::prelude::*;
