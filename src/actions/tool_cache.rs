@@ -5,6 +5,7 @@ use std::borrow::Cow;
 use std::convert::Into;
 use wasm_bindgen::prelude::*;
 
+/// Builder for a tool downloader
 #[derive(Debug)]
 pub struct DownloadTool {
     url: JsString,
@@ -13,6 +14,7 @@ pub struct DownloadTool {
 }
 
 impl<U: Into<JsString>> From<U> for DownloadTool {
+    /// Constructs a `DownloadTool` that will download from the specified URL
     fn from(url: U) -> DownloadTool {
         DownloadTool {
             url: url.into(),
@@ -23,16 +25,19 @@ impl<U: Into<JsString>> From<U> for DownloadTool {
 }
 
 impl DownloadTool {
+    /// Set the destination path of the download
     pub fn dest<D: Into<Path>>(&mut self, dest: D) -> &mut Self {
         self.dest = Some(dest.into());
         self
     }
 
+    /// Specify an authorization header
     pub fn auth<A: Into<JsString>>(&mut self, auth: A) -> &mut Self {
         self.auth = Some(auth.into());
         self
     }
 
+    /// Perform the download and return the path the file was downloaded to
     pub async fn download(&mut self) -> Result<Path, JsValue> {
         let dest = self.dest.as_ref().map(|dest| {
             let mut resolved = process::cwd();
@@ -46,15 +51,24 @@ impl DownloadTool {
     }
 }
 
+/// Downloads a tool from a specified URL
 pub async fn download_tool<O: Into<DownloadTool>>(options: O) -> Result<Path, JsValue> {
     options.into().download().await
 }
 
+/// Different types of compression that may be applied to a tar file
 #[derive(Debug, Copy, Clone)]
 pub enum StreamCompression {
+    /// None
     None,
+
+    /// Gzip
     Gzip,
+
+    /// Bzip2
     Bzip2,
+
+    /// LZMA
     Xz,
 }
 
@@ -70,6 +84,8 @@ impl StreamCompression {
     }
 }
 
+/// Extracts a tar file with the specified compression. An output directory can
+/// be optionally specified.
 pub async fn extract_tar(path: &Path, compression: StreamCompression, dest: Option<&Path>) -> Result<Path, JsValue> {
     let mut tar_option = String::from("x");
     tar_option += &compression.tar_flag();
@@ -82,6 +98,7 @@ pub async fn extract_tar(path: &Path, compression: StreamCompression, dest: Opti
     Ok(dest.into())
 }
 
+/// Saves a path into a local cache
 pub async fn cache_dir(tool: &str, version: &str, path: &Path, arch: Option<&str>) -> Result<Path, JsValue> {
     let path: JsString = path.into();
     let tool: JsString = tool.into();
@@ -92,6 +109,7 @@ pub async fn cache_dir(tool: &str, version: &str, path: &Path, arch: Option<&str
     Ok(dest.into())
 }
 
+/// Low level bindings for the GitHub Actions Toolkit "tool cache" API
 pub mod ffi {
     use js_sys::{JsString, Map};
     use wasm_bindgen::prelude::*;

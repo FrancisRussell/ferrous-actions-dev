@@ -51,12 +51,14 @@ const WORKSPACE_OVERRIDDEN_TAG: &str = "#WORKSPACE_OVERRIDEN";
 /// - avoid issues related to archive paths being encoded relative to
 ///   `$GITHUB_WORKSPACE`.
 #[derive(Debug)]
-pub struct ScopedWorkspace {
+struct ScopedWorkspace {
     original_cwd: Path,
     original_workspace: Option<String>,
 }
 
 impl ScopedWorkspace {
+    /// Constructs a new `Entry` with the specified name which can be used to
+    /// either save or restore files.
     pub fn new(new_cwd: &Path) -> Result<ScopedWorkspace, JsValue> {
         let original_cwd = node::process::cwd();
         let original_workspace = node::process::get_env().get(WORKSPACE_ENV_VAR).cloned();
@@ -81,6 +83,7 @@ impl Drop for ScopedWorkspace {
     }
 }
 
+/// Saves and retrives cache entries
 pub struct Entry {
     key: JsString,
     paths: Vec<Path>,
@@ -100,25 +103,36 @@ impl Entry {
         }
     }
 
+    /// Add the specified paths (not glob patterns) to be cached or restored
     pub fn paths<I: IntoIterator<Item = P>, P: Into<Path>>(&mut self, paths: I) -> &mut Entry {
         self.paths.extend(paths.into_iter().map(Into::into));
         self
     }
 
+    /// Add the specified path (not glob patterns) to be cached or restored
     pub fn path<P: Into<Path>>(&mut self, path: P) -> &mut Entry {
         self.paths(std::iter::once(path.into()))
     }
 
+    /// Specifies a root path of the cache entry. This can be different on save
+    /// and restore, but needs to be set to a path above all cache entry
+    /// paths.
+    ///
+    /// This function is a Ferrous actions extension and not part of the GitHub
+    /// Actions Toolkit API.
     pub fn root<P: Into<Path>>(&mut self, path: P) -> &mut Entry {
         self.relative_to = Some(path.into());
         self
     }
 
+    /// Enables interaction between cache entries produced on Windows and other
+    /// operating systems
     pub fn permit_sharing_with_windows(&mut self, allow: bool) -> &mut Entry {
         self.cross_os_archive = allow;
         self
     }
 
+    /// Specify multiple restore keys
     pub fn restore_keys<I, K>(&mut self, restore_keys: I) -> &mut Entry
     where
         I: IntoIterator<Item = K>,
@@ -128,10 +142,15 @@ impl Entry {
         self
     }
 
+    /// Specifies a restore key.
+    ///
+    /// If the cache entry name fails to match, restore keys will be searched
+    /// for and match so long as they form a prefix of the cache key.
     pub fn restore_key<K: Into<JsString>>(&mut self, restore_key: K) -> &mut Entry {
         self.restore_keys(std::iter::once(restore_key.into()))
     }
 
+    /// Saves the cache entry and returns a numeric cache ID.
     pub async fn save(&self) -> Result<i64, JsValue> {
         use wasm_bindgen::JsCast;
         let patterns = self.build_patterns();
@@ -150,6 +169,15 @@ impl Entry {
         Ok(result)
     }
 
+    /// Saves the cache entry if either:
+    /// - The name and restore keys do not match anything currently in the cache
+    /// - A restore based on the restore keys match `old_restore_key`
+    ///
+    /// In other words, the cache entry is only saved if it is either completely
+    /// new, or an update to the cache entry that was previously restored.
+    ///
+    /// This functionality is a Ferrous Actions extension and not part of the
+    /// GitHub Actions Toolkit API.
     pub async fn save_if_update(&self, old_restore_key: Option<&str>) -> Result<Option<i64>, JsValue> {
         let new_restore_key = self.peek_restore().await?;
         if new_restore_key.is_none() || new_restore_key.as_deref() == old_restore_key {
@@ -215,6 +243,8 @@ impl Entry {
         self.relative_to.as_ref().map(ScopedWorkspace::new).transpose()
     }
 
+    /// Attempts to restore the cache entry. If one was found, the key is
+    /// returned.
     pub async fn restore(&self) -> Result<Option<String>, JsValue> {
         let patterns = self.build_patterns();
         let result = {
@@ -260,6 +290,7 @@ impl Entry {
     }
 }
 
+/// Low-level bindings to the GitHub Actions Tookit "cache" API
 pub mod ffi {
     use js_sys::{JsString, Object};
     use wasm_bindgen::prelude::*;
