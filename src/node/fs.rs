@@ -4,36 +4,44 @@ use js_sys::{BigInt, JsString, Object, Uint8Array};
 use std::collections::VecDeque;
 use wasm_bindgen::{JsCast, JsError, JsValue};
 
+/// The type of a directory entry
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct FileType {
     inner: FileTypeEnum,
 }
 
 impl FileType {
+    /// Is the entry a file?
     pub fn is_file(self) -> bool {
         self.inner == FileTypeEnum::File
     }
 
+    /// Is the entry a directory?
     pub fn is_dir(self) -> bool {
         self.inner == FileTypeEnum::Dir
     }
 
+    /// Is the entry a symbolic link?
     pub fn is_symlink(self) -> bool {
         self.inner == FileTypeEnum::Symlink
     }
 
+    /// Is the entry a FIFO?
     pub fn is_fifo(self) -> bool {
         self.inner == FileTypeEnum::Fifo
     }
 
+    /// Is the entry a socket?
     pub fn is_socket(self) -> bool {
         self.inner == FileTypeEnum::Socket
     }
 
+    /// Is the entry a block device?
     pub fn is_block_device(self) -> bool {
         self.inner == FileTypeEnum::BlockDev
     }
 
+    /// Is the entry a character device?
     pub fn is_char_device(self) -> bool {
         self.inner == FileTypeEnum::CharDev
     }
@@ -71,12 +79,14 @@ fn determine_file_type(file_type: &ffi::FileType) -> FileTypeEnum {
     }
 }
 
+/// An iterator over directory entries
 #[derive(Debug)]
 pub struct ReadDir {
     path: Path,
     entries: VecDeque<ffi::DirEnt>,
 }
 
+/// A directory entry
 #[derive(Debug)]
 pub struct DirEntry {
     parent: Path,
@@ -84,16 +94,22 @@ pub struct DirEntry {
 }
 
 impl DirEntry {
+    /// The file name
     pub fn file_name(&self) -> String {
         self.inner.get_name().into()
     }
 
+    /// The path
+    ///
+    /// This can be relative or absolute depending on the path given to
+    /// `read_dir`.
     pub fn path(&self) -> Path {
         let mut result = self.parent.clone();
         result.push(self.inner.get_name());
         result
     }
 
+    /// The type of the directory entry
     pub fn file_type(&self) -> FileType {
         FileType {
             inner: determine_file_type(&self.inner),
@@ -110,11 +126,13 @@ impl Iterator for ReadDir {
     }
 }
 
+/// Changes the permissions of the specified path to the specified mode
 pub async fn chmod<P: Into<JsString>>(path: P, mode: u16) -> Result<(), JsValue> {
     let path: JsString = path.into();
     ffi::chmod(&path, mode).await.map(|_| ())
 }
 
+/// Reads the file at the specified path into a `Vec`
 pub async fn read_file<P: Into<JsString>>(path: P) -> Result<Vec<u8>, JsValue> {
     let path: JsString = path.into();
     let buffer = ffi::read_file(&path).await?;
@@ -127,12 +145,14 @@ pub async fn read_file<P: Into<JsString>>(path: P) -> Result<Vec<u8>, JsValue> {
     Ok(result)
 }
 
+/// Write the supplied `Vec` to a file at the specified path
 pub async fn write_file<P: Into<JsString>>(path: P, data: &[u8]) -> Result<(), JsValue> {
     let path: JsString = path.into();
     ffi::write_file(&path, data).await?;
     Ok(())
 }
 
+/// Reads all entries in the specified folder and returns an iterator
 pub async fn read_dir<P: Into<JsString>>(path: P) -> Result<ReadDir, JsValue> {
     let path: JsString = path.into();
     let options = js_sys::Map::new();
@@ -151,6 +171,7 @@ pub async fn read_dir<P: Into<JsString>>(path: P) -> Result<ReadDir, JsValue> {
     Ok(entries)
 }
 
+/// Creates a folder and any required parent folders at the specified path
 pub async fn create_dir_all<P: Into<JsString>>(path: P) -> Result<(), JsValue> {
     let options = js_sys::Map::new();
     options.set(&"recursive".into(), &true.into());
@@ -160,24 +181,30 @@ pub async fn create_dir_all<P: Into<JsString>>(path: P) -> Result<(), JsValue> {
     Ok(())
 }
 
+/// Creates a folder at the specified path
+///
+/// This function will error if any required parent folders do not exist.
 pub async fn create_dir<P: Into<JsString>>(path: P) -> Result<(), JsValue> {
     let path: JsString = path.into();
     ffi::mkdir(&path, None).await?;
     Ok(())
 }
 
+/// Deletes an empty folder at the specified path
 pub async fn remove_dir<P: Into<JsString>>(path: P) -> Result<(), JsValue> {
     let path: JsString = path.into();
     ffi::rmdir(&path, None).await?;
     Ok(())
 }
 
+/// Deletes a file at the specified path
 pub async fn remove_file<P: Into<JsString>>(path: P) -> Result<(), JsValue> {
     let path: JsString = path.into();
     ffi::unlink(&path).await?;
     Ok(())
 }
 
+/// Renames a file from one path to another
 pub async fn rename<P: Into<JsString>>(from: P, to: P) -> Result<(), JsValue> {
     let from: JsString = from.into();
     let to: JsString = to.into();
@@ -185,25 +212,30 @@ pub async fn rename<P: Into<JsString>>(from: P, to: P) -> Result<(), JsValue> {
     Ok(())
 }
 
+/// File metadata
 #[derive(Debug)]
 pub struct Metadata {
     inner: ffi::Stats,
 }
 
 impl Metadata {
+    /// The ID of the file owner
     pub fn uid(&self) -> u64 {
         self.inner.uid().try_into().expect("UID too large")
     }
 
+    /// The group ID of the file
     pub fn gid(&self) -> u64 {
         self.inner.gid().try_into().expect("GID too large")
     }
 
+    /// The length of the file in bytes
     #[allow(clippy::len_without_is_empty)]
     pub fn len(&self) -> u64 {
         self.inner.size().try_into().expect("File size too large")
     }
 
+    /// The Unix permission flags for the file
     pub fn mode(&self) -> u64 {
         self.inner.mode().try_into().expect("File mode too large")
     }
@@ -226,32 +258,38 @@ impl Metadata {
         DateTime::from_utc(naive, Utc)
     }
 
+    /// The last time the file was accessed
     pub fn accessed(&self) -> DateTime<Utc> {
         let ns = self.inner.access_time_ns();
         Self::utc_ns_to_time(ns)
     }
 
+    /// The last time the file was modified
     pub fn modified(&self) -> DateTime<Utc> {
         let ns = self.inner.modification_time_ns();
         Self::utc_ns_to_time(ns)
     }
 
+    /// The file creation time
     pub fn created(&self) -> DateTime<Utc> {
         let ns = self.inner.created_time_ns();
         Self::utc_ns_to_time(ns)
     }
 
+    /// The type of the file
     pub fn file_type(&self) -> FileType {
         FileType {
             inner: determine_file_type(&self.inner),
         }
     }
 
+    /// Returns `true` if the file is a directory, and `false` otherwise
     pub fn is_directory(&self) -> bool {
         self.inner.is_directory()
     }
 }
 
+/// Returns metadata about the specified path, without dereferencing symlinks
 pub async fn symlink_metadata<P: Into<JsString>>(path: P) -> Result<Metadata, JsValue> {
     let path = path.into();
     let options = js_sys::Map::new();
@@ -270,6 +308,7 @@ fn timestamp_to_seconds(timestamp: &DateTime<Utc>) -> f64 {
     whole + fractional
 }
 
+/// Sets the access and modification times of the file at the specified path
 pub async fn lutimes<P: Into<JsString>>(
     path: P,
     a_time: &DateTime<Utc>,
@@ -284,6 +323,7 @@ pub async fn lutimes<P: Into<JsString>>(
     Ok(())
 }
 
+/// Low-level bindings for node.js filesystem functions
 pub mod ffi {
     use js_sys::{BigInt, JsString, Object};
     use wasm_bindgen::prelude::*;

@@ -2,6 +2,7 @@ use crate::node::path::Path;
 use js_sys::{JsString, Number, Object};
 use wasm_bindgen::JsValue;
 
+/// Formats and outputs a GitHub actions log line at debug level
 #[macro_export]
 macro_rules! debug {
     ($($arg:tt)*) => {{
@@ -9,6 +10,7 @@ macro_rules! debug {
     }};
 }
 
+/// Formats and outputs a GitHub actions log line at info level
 #[macro_export]
 macro_rules! info {
     ($($arg:tt)*) => {{
@@ -16,6 +18,8 @@ macro_rules! info {
     }};
 }
 
+/// Formats and outputs a GitHub actions log line at notice level (this will be
+/// an annotation)
 #[macro_export]
 macro_rules! notice {
     ($($arg:tt)*) => {{
@@ -23,6 +27,8 @@ macro_rules! notice {
     }};
 }
 
+/// Formats and outputs a GitHub actions log line at warning level (this will be
+/// an annotation)
 #[macro_export]
 macro_rules! warning {
     ($($arg:tt)*) => {{
@@ -30,6 +36,8 @@ macro_rules! warning {
     }};
 }
 
+/// Formats and outputs a GitHub actions log line at error level (this will be
+/// an annotation)
 #[macro_export]
 macro_rules! error {
     ($($arg:tt)*) => {{
@@ -37,30 +45,40 @@ macro_rules! error {
     }};
 }
 
+/// Outputs a GitHub actions log line at debug level
 pub fn debug<S: Into<JsString>>(message: S) {
     ffi::debug(&message.into());
 }
 
+/// Outputs a GitHub actions log line at info level
 pub fn info<S: Into<JsString>>(message: S) {
     ffi::info(&message.into());
 }
 
+/// Outputs a GitHub actions log line at notice level (this will be
+/// an annotation)
 pub fn notice<A: Into<Annotation>>(message: A) {
     message.into().notice();
 }
 
+/// Outputs a GitHub actions log line at warning level (this will be
+/// an annotation)
 pub fn warning<A: Into<Annotation>>(message: A) {
     message.into().warning();
 }
 
+/// Formats and outputs a GitHub actions log line at error level (this will be
+/// an annotation)
 pub fn error<A: Into<Annotation>>(message: A) {
     message.into().error();
 }
 
+/// Sets a named action output to the specified value
 pub fn set_output<N: Into<JsString>, V: Into<JsString>>(name: N, value: V) {
     ffi::set_output(&name.into(), &value.into());
 }
 
+/// Builder for retrieving action inputs
 #[derive(Debug)]
 pub struct Input {
     name: JsString,
@@ -69,6 +87,7 @@ pub struct Input {
 }
 
 impl<N: Into<JsString>> From<N> for Input {
+    /// Construct a builder to access the specified input name
     fn from(name: N) -> Input {
         Input {
             name: name.into(),
@@ -79,11 +98,14 @@ impl<N: Into<JsString>> From<N> for Input {
 }
 
 impl Input {
+    /// Mark this input as required. The `Input` will return an error on
+    /// retrieval if the input is not defined.
     pub fn required(&mut self, value: bool) -> &mut Input {
         self.required = value;
         self
     }
 
+    /// Specifies that whitespace should be trimmed from the retrieved input
     pub fn trim_whitespace(&mut self, value: bool) -> &mut Input {
         self.trim_whitespace = value;
         self
@@ -96,12 +118,14 @@ impl Input {
         }
     }
 
+    /// Gets the specified input (if defined)
     pub fn get(&mut self) -> Result<Option<String>, JsValue> {
         let ffi = self.to_ffi();
         let value = String::from(ffi::get_input(&self.name, Some(ffi))?);
         Ok(if value.is_empty() { None } else { Some(value) })
     }
 
+    /// Gets the specified input, returning an error if it is not defined
     pub fn get_required(&mut self) -> Result<String, JsValue> {
         let mut ffi = self.to_ffi();
         ffi.required = Some(true);
@@ -109,6 +133,7 @@ impl Input {
     }
 }
 
+/// Builder for outputting annotations
 #[derive(Debug)]
 pub struct Annotation {
     message: String,
@@ -121,6 +146,7 @@ pub struct Annotation {
 }
 
 impl<M: Into<String>> From<M> for Annotation {
+    /// Constructs an annotation with the specified message
     fn from(message: M) -> Annotation {
         Annotation {
             message: message.into(),
@@ -134,39 +160,51 @@ impl<M: Into<String>> From<M> for Annotation {
     }
 }
 
+/// Annotation levels
 #[derive(Copy, Clone, Debug)]
 pub enum AnnotationLevel {
+    /// Notice
     Notice,
+
+    /// Warning
     Warning,
+
+    /// Error
     Error,
 }
 
 impl Annotation {
+    /// Sets the title of the annotation
     pub fn title(&mut self, title: &str) -> &mut Annotation {
         self.title = Some(title.to_string());
         self
     }
 
+    /// Sets the path to a file to which the annotation is relevant
     pub fn file(&mut self, path: &Path) -> &mut Annotation {
         self.file = Some(path.clone());
         self
     }
 
+    /// Sets the line in the file the annotation should start
     pub fn start_line(&mut self, start_line: usize) -> &mut Annotation {
         self.start_line = Some(start_line);
         self
     }
 
+    /// Sets the line in the file the annotation should end
     pub fn end_line(&mut self, end_line: usize) -> &mut Annotation {
         self.end_line = Some(end_line);
         self
     }
 
+    /// Sets the column in the file the annotation should start
     pub fn start_column(&mut self, start_column: usize) -> &mut Annotation {
         self.start_column = Some(start_column);
         self
     }
 
+    /// Sets the column in the file the annotation should end
     pub fn end_column(&mut self, end_column: usize) -> &mut Annotation {
         self.end_column = Some(end_column);
         self
@@ -193,18 +231,22 @@ impl Annotation {
         Object::from_entries(&properties).expect("Failed to convert options map to object")
     }
 
+    /// Outputs the annotation as an error
     pub fn error(&self) {
         self.output(AnnotationLevel::Error);
     }
 
+    /// Outputs the annotation at notice level
     pub fn notice(&self) {
         self.output(AnnotationLevel::Notice);
     }
 
+    /// Outputs the annotation as a warning
     pub fn warning(&self) {
         self.output(AnnotationLevel::Warning);
     }
 
+    /// Outputs the annotation at the specified level
     pub fn output(&self, level: AnnotationLevel) {
         let message = JsString::from(self.message.as_str());
         let properties = self.build_js_properties();
@@ -216,31 +258,37 @@ impl Annotation {
     }
 }
 
+/// Retrieves the action input of the specified name
 pub fn get_input<I: Into<Input>>(input: I) -> Result<Option<String>, JsValue> {
     let mut input = input.into();
     input.get()
 }
 
+/// Mark this action as failed for the specified reason
 pub fn set_failed<M: Into<JsString>>(message: M) {
     ffi::set_failed(&message.into());
 }
 
+/// Adds the specified path into `$PATH` for use by later actions
 pub fn add_path(path: &Path) {
     ffi::add_path(&path.into());
 }
 
+/// Exports an environment variable from the action
 pub fn export_variable<N: Into<JsString>, V: Into<JsString>>(name: N, value: V) {
     let name = name.into();
     let value = value.into();
     ffi::export_variable(&name, &value);
 }
 
+/// Saves state for use by the action in a later phase
 pub fn save_state<N: Into<JsString>, V: Into<JsString>>(name: N, value: V) {
     let name = name.into();
     let value = value.into();
     ffi::save_state(&name, &value);
 }
 
+/// Retrieves previously saved action state
 pub fn get_state<N: Into<JsString>>(name: N) -> Option<String> {
     let name = name.into();
     let value: String = ffi::get_state(&name).into();
@@ -252,14 +300,17 @@ pub fn get_state<N: Into<JsString>>(name: N) -> Option<String> {
     }
 }
 
+/// Starts a foldable group
 pub fn start_group<N: Into<JsString>>(name: N) {
     ffi::start_group(&name.into());
 }
 
+/// Ends a foldable group
 pub fn end_group() {
     ffi::end_group();
 }
 
+/// Low-level bindings to the GitHub Actions Toolkit "core" API
 #[allow(clippy::drop_non_drop)]
 pub mod ffi {
     use js_sys::{JsString, Object};

@@ -1,3 +1,4 @@
+/// Low-level bindings for node.js stream functions and variables
 pub mod ffi {
     use js_sys::Object;
     use wasm_bindgen::prelude::*;

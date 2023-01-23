@@ -1,6 +1,7 @@
+use super::noop_stream;
 use super::push_line_splitter::PushLineSplitter;
+use crate::node;
 use crate::node::path::Path;
-use crate::{node, noop_stream};
 use js_sys::{JsString, Object};
 use parking_lot::Mutex;
 use std::sync::Arc;
@@ -13,16 +14,20 @@ enum StdioEnum {
     Null,
 }
 
+/// Where output of a standard stream can be redirected
 #[derive(Debug, Clone, Copy)]
 pub struct Stdio {
     inner: StdioEnum,
 }
 
 impl Stdio {
+    /// Constructs a `Stdio` which causes output to be discarded
     pub fn null() -> Stdio {
         Stdio { inner: StdioEnum::Null }
     }
 
+    /// Constructs a `Stdio` which causes output to be send to the same location
+    /// as it would for the parent process
     pub fn inherit() -> Stdio {
         Stdio {
             inner: StdioEnum::Inherit,
@@ -80,6 +85,7 @@ impl AsRef<JsValue> for StreamToLines {
     }
 }
 
+/// Builder for executing a command
 pub struct Command {
     command: Path,
     args: Vec<JsString>,
@@ -93,6 +99,7 @@ pub struct Command {
 }
 
 impl Command {
+    /// Specified additional command arguments
     pub fn args<I, S>(&mut self, args: I) -> &mut Command
     where
         I: IntoIterator<Item = S>,
@@ -102,11 +109,13 @@ impl Command {
         self
     }
 
+    /// Specify a command argument
     pub fn arg<S: Into<JsString>>(&mut self, arg: S) -> &mut Command {
         self.args(std::iter::once(arg.into()));
         self
     }
 
+    /// Executes the command and returns the status code
     pub async fn exec(&mut self) -> Result<i32, JsValue> {
         let command = self.command.to_string();
         let command = Self::escape_command(command.as_str());
@@ -142,32 +151,43 @@ impl Command {
             code
         });
 
-        // Be explict about line-buffer flushing
+        // Be explicit about line-buffer flushing
         drop(outline_adapter);
         drop(errline_adapter);
         result
     }
 
+    /// Sets a callback to be called each time a new line is written to standard
+    /// output. Note that line splitting is done by an internal
+    /// re-implementation of line splitting and not the GitHub Actions
+    /// Toolkit one due to issues with the latter.
     pub fn outline<F: Fn(&str) + 'static>(&mut self, callback: F) -> &mut Command {
         self.outline = Some(Arc::new(Box::new(callback)));
         self
     }
 
+    /// Sets a callback to be called each time a new line is written to standard
+    /// error. Note that line splitting is done by an internal re-implementation
+    /// of line splitting and not the GitHub Actions Toolkit one due to
+    /// issues with the latter.
     pub fn errline<F: Fn(&str) + 'static>(&mut self, callback: F) -> &mut Command {
         self.errline = Some(Arc::new(Box::new(callback)));
         self
     }
 
+    /// Sets where standard output should be directed
     pub fn stdout(&mut self, redirect: Stdio) -> &mut Command {
         self.stdout = redirect;
         self
     }
 
+    /// Sets where standard error should be directed
     pub fn stderr(&mut self, redirect: Stdio) -> &mut Command {
         self.stderr = redirect;
         self
     }
 
+    /// Sets the current working directory of the command
     pub fn current_dir(&mut self, path: &Path) -> &mut Command {
         self.cwd = path.clone();
         self
@@ -199,6 +219,7 @@ impl Command {
 }
 
 impl<'a> From<&'a Path> for Command {
+    /// Constructs a command that will execute the file at the specified path.
     fn from(path: &'a Path) -> Command {
         Command {
             command: path.clone(),
@@ -212,6 +233,7 @@ impl<'a> From<&'a Path> for Command {
     }
 }
 
+/// Low level bindings to the GitHub Actions toolkit "exec" API
 pub mod ffi {
     use js_sys::JsString;
     use wasm_bindgen::prelude::*;
