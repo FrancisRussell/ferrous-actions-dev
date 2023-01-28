@@ -99,6 +99,7 @@ impl Path {
     }
 
     /// Returns this path relative to the supplied path
+    #[must_use]
     pub fn relative_to<P: Into<Path>>(&self, path: P) -> Path {
         let path = path.into();
         let relative = ffi::relative(&path.inner, &self.inner);
