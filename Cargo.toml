@@ -46,7 +46,7 @@ wasm-bindgen-test = "0.3"
 
 [dependencies.rustup-toolchain-manifest]
 git = "https://github.com/FrancisRussell/rustup-toolchain-manifest.git"
-rev = "ecc0cd3c43b4dd1ccfb384830e18b86a3aafbc83"
+rev = "54adc2139a38b5ac6f4208f2f979c75b08e0b0d6"
 version = "0.2.0"
 
 [dependencies.simple-path-match]
