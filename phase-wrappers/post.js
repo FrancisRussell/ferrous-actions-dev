@@ -1,3 +1,4 @@
+// See "Node.js ES module support" at https://docs.rs/getrandom/0.2.8/getrandom/
 const { webcrypto } = require('node:crypto')
 globalThis.crypto = webcrypto
 
