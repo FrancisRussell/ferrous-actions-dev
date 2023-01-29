@@ -5,6 +5,7 @@
     clippy::uninlined_format_args,
     clippy::missing_panics_doc
 )]
+#![forbid(unsafe_code)]
 
 //! This crate can be compiled so that only the node.js, and optionally also the
 //! GitHub Actions Toolkit bindings, are present. To do this, use the
