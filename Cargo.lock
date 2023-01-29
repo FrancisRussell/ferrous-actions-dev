@@ -594,8 +594,8 @@ checksum = "456c603be3e8d448b072f410900c09faf164fbce2d480456f50eea6e25f9c848"
 
 [[package]]
 name = "rustup-toolchain-manifest"
-version = "0.2.1"
-source = "git+https://github.com/FrancisRussell/rustup-toolchain-manifest.git?rev=54adc2139a38b5ac6f4208f2f979c75b08e0b0d6#54adc2139a38b5ac6f4208f2f979c75b08e0b0d6"
+version = "0.2.2"
+source = "git+https://github.com/FrancisRussell/rustup-toolchain-manifest.git?rev=645ae80e22d48b3031774348f5d429957beaa933#645ae80e22d48b3031774348f5d429957beaa933"
 dependencies = [
  "basic-toml",
  "chrono",
@@ -683,7 +683,7 @@ checksum = "43b2853a4d09f215c24cc5489c992ce46052d359b5109343cbafbf26bc62f8a3"
 [[package]]
 name = "simple-path-match"
 version = "0.2.0"
-source = "git+https://github.com/FrancisRussell/simple-path-match.git?rev=cbd26caad605a61861c4af754ada38166790b593#cbd26caad605a61861c4af754ada38166790b593"
+source = "git+https://github.com/FrancisRussell/simple-path-match.git?rev=297ce574bd8a06a86a373eca303078d4f1f30c11#297ce574bd8a06a86a373eca303078d4f1f30c11"
 dependencies = [
  "beef",
  "snafu",
