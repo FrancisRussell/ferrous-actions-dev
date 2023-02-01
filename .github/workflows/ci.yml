@@ -61,7 +61,7 @@ jobs:
           toolchain: nightly
           profile: minimal
           target: wasm32-unknown-unknown
-          components: clippy
+          components: clippy rust-analysis
           default: true
       - id: install-grcov
         name: Install grcov
