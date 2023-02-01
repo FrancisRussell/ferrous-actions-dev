@@ -119,6 +119,7 @@ Example invocation:
     toolchain: nightly
     target: wasm32-unknown-unknown
     profile: minimal
+    components: rustfmt
     default: true
 ```
 
@@ -128,6 +129,7 @@ The following options are also available:
 * `target` (optional): A whitespace separated list of target architectures.
 * `profile` (optional): The Rustup profile (e.g. `minimal`, `default` or
   `complete`). The default is `default`.
+* `components` (optional): A whitespace separated list of additional components.
 * `default` (optional): Whether this toolchain should be set as the Rustup
   default compiler. This defaults to `true`. _This is different to actions-rs's
   behaviour_.

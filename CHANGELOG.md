@@ -7,6 +7,7 @@
 * Expose and document the node.js and GitHub Actions Toolkit bindings.
 * Improve path-to-glob conversion.
 * Add changelog.
+* Document `components` option for `install-rustup` in `README.md`.
 
 ## v0.1.0-beta.2
 
