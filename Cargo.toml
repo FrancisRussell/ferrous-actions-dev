@@ -30,7 +30,7 @@ futures = { version = "0.3.26", default-features = false, features = ["std"]}
 getrandom = { version = "0.2.8", features = ["js"] }
 humantime = "2.1.0"
 itertools = "0.10.5"
-js-sys = "0.3.55"
+js-sys = "0.3.61"
 lazy_static = "1.4.0"
 parking_lot = "0.12.1"
 postcard = { version = "1.0.2", default-features = false, features = ["use-std"] }
