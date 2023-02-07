@@ -3,7 +3,6 @@ use crate::node::path::Path;
 use js_sys::JsString;
 use std::convert::Into;
 use wasm_bindgen::prelude::*;
-use wasm_bindgen::JsCast as _;
 
 const WORKSPACE_ENV_VAR: &str = "GITHUB_WORKSPACE";
 const WORKSPACE_OVERRIDDEN_TAG: &str = "#WORKSPACE_OVERRIDEN";
@@ -152,7 +151,6 @@ impl Entry {
 
     /// Saves the cache entry and returns a numeric cache ID.
     pub async fn save(&self) -> Result<i64, JsValue> {
-        use wasm_bindgen::JsCast;
         let patterns = self.build_patterns();
         let result = {
             let _caching_scope = self.build_action_scope()?;
