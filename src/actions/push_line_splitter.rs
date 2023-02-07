@@ -50,6 +50,7 @@ impl PushLineSplitter {
         self.update_scan();
     }
 
+    #[allow(dead_code)]
     pub fn write(&mut self, data: &[u8]) {
         self.pre_write();
         self.buffer.extend(data);
