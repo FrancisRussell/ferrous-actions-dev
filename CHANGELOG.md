@@ -8,6 +8,7 @@
 * Improve path-to-glob conversion.
 * Add changelog.
 * Document `components` option for `install-rustup` in `README.md`.
+* Use new `lookupOnly` option to simplify cache peeking code.
 
 ## v0.1.0-beta.2
 

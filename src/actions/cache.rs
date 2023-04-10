@@ -244,47 +244,34 @@ impl Entry {
     /// Attempts to restore the cache entry. If one was found, the key is
     /// returned.
     pub async fn restore(&self) -> Result<Option<String>, JsValue> {
+        self.peek_or_restore(false).await
+    }
+
+    async fn peek_restore(&self) -> Result<Option<String>, JsValue> {
+        self.peek_or_restore(true).await
+    }
+
+    pub async fn peek_or_restore(&self, peek: bool) -> Result<Option<String>, JsValue> {
+        use js_sys::Object;
+
         let patterns = self.build_patterns();
+        let options = {
+            let options = js_sys::Map::new();
+            options.set(&"lookupOnly".into(), &peek.into());
+            Object::from_entries(&options).expect("Failed to convert options map to object")
+        };
         let result = {
             let _caching_scope = self.build_action_scope()?;
             ffi::restore_cache(
                 patterns,
                 &self.key,
                 self.restore_keys.clone(),
-                None,
+                Some(options),
                 self.cross_os_archive,
             )
             .await?
         };
         Ok(result.dyn_ref::<JsString>().map(Into::into))
-    }
-
-    async fn peek_restore(&self) -> Result<Option<String>, JsValue> {
-        use js_sys::Object;
-
-        let compression_method: JsString = ffi::get_compression_method().await?.into();
-        let keys: Vec<JsString> = std::iter::once(&self.key)
-            .chain(self.restore_keys.iter())
-            .cloned()
-            .collect();
-        let options = {
-            let options = js_sys::Map::new();
-            options.set(&"compressionMethod".into(), &compression_method.into());
-            options.set(&"enableCrossOsArchive".into(), &self.cross_os_archive.into());
-            Object::from_entries(&options).expect("Failed to convert options map to object")
-        };
-        let patterns = self.build_patterns();
-        let result = {
-            let _caching_scope = self.build_action_scope()?;
-            ffi::get_cache_entry(keys, patterns, Some(options)).await?
-        };
-        if result == JsValue::NULL || result == JsValue::UNDEFINED {
-            Ok(None)
-        } else {
-            let result: Object = result.into();
-            let cache_key = js_sys::Reflect::get(&result, &"cacheKey".into())?;
-            Ok(cache_key.dyn_ref::<JsString>().map(Into::into))
-        }
     }
 }
 
@@ -310,22 +297,6 @@ pub mod ffi {
             restore_keys: Vec<JsString>,
             download_options: Option<Object>,
             cross_os_archive: bool,
-        ) -> Result<JsValue, JsValue>;
-    }
-
-    #[wasm_bindgen(module = "@actions/cache/lib/internal/cacheUtils")]
-    extern "C" {
-        #[wasm_bindgen(js_name = "getCompressionMethod", catch)]
-        pub(super) async fn get_compression_method() -> Result<JsValue, JsValue>;
-    }
-
-    #[wasm_bindgen(module = "@actions/cache/lib/internal/cacheHttpClient")]
-    extern "C" {
-        #[wasm_bindgen(js_name = "getCacheEntry", catch)]
-        pub(super) async fn get_cache_entry(
-            keys: Vec<JsString>,
-            paths: Vec<JsString>,
-            options: Option<Object>,
         ) -> Result<JsValue, JsValue>;
     }
 }
