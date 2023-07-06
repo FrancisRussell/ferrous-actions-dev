@@ -15,7 +15,7 @@ impl AgnosticPath {
         self.components
             .iter()
             .map(String::as_str)
-            .chain(trailing.into_iter())
+            .chain(trailing)
             .join(separator)
     }
 }

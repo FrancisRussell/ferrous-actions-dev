@@ -161,7 +161,7 @@ impl Command {
     /// output. Note that line splitting is done by an internal
     /// re-implementation of line splitting and not the GitHub Actions
     /// Toolkit one due to issues with the latter.
-    pub fn outline<F: Fn(&str) + 'static>(&mut self, callback: F) -> &mut Command {
+    pub fn outline<F: Fn(&str) + 'static + Sync + Send>(&mut self, callback: F) -> &mut Command {
         self.outline = Some(Arc::new(Box::new(callback)));
         self
     }
@@ -170,7 +170,7 @@ impl Command {
     /// error. Note that line splitting is done by an internal re-implementation
     /// of line splitting and not the GitHub Actions Toolkit one due to
     /// issues with the latter.
-    pub fn errline<F: Fn(&str) + 'static>(&mut self, callback: F) -> &mut Command {
+    pub fn errline<F: Fn(&str) + 'static + Sync + Send>(&mut self, callback: F) -> &mut Command {
         self.errline = Some(Arc::new(Box::new(callback)));
         self
     }
