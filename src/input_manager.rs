@@ -1,4 +1,4 @@
-use crate::actions::core;
+use crate::actions::core as core_;
 use crate::Error;
 use parking_lot::Mutex;
 use std::collections::{HashMap, HashSet};
@@ -64,7 +64,7 @@ impl Manager {
         let mut inputs = HashMap::new();
         for input in Input::iter() {
             let input_name: &str = input.into();
-            if let Some(value) = core::Input::from(input_name).get()? {
+            if let Some(value) = core_::Input::from(input_name).get()? {
                 inputs.insert(input, value);
             }
         }
