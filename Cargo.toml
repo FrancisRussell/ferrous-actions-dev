@@ -20,7 +20,7 @@ default = ["node_bindings", "github_actions_bindings", "action"]
 async-recursion = "1.0.4"
 async-trait = "0.1.74"
 base64 = "0.21.2"
-blake3 = { version = "1.4.1", default-features = false }
+blake3 = { version = "1.5.0", default-features = false }
 cargo_metadata = "0.15.4"
 cfg-if = "1.0.0"
 chrono = { version = "0.4.26", default-features = false, features = ["wasmbind", "std", "clock"] }
