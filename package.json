@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/FrancisRussell/ferrous-actions-dev",
   "dependencies": {
-    "@actions/cache": "^6.0.0",
+    "@actions/cache": "^6.0.1",
     "@actions/core": "^3.0.1",
     "@actions/io": "^3.0.2",
     "@actions/tool-cache": "^4.0.0"
